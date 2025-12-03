@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+/* Custom styles for markdown content */
+.prose pre {
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.prose code {
+  font-family: 'Courier New', monospace !important;
+}
+
+.prose ol,
+.prose ul {
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.prose li {
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* KaTeX Math Formula Optimization */
+.katex {
+  font-size: 1.1em !important;
+  line-height: 1.6 !important;
+}
+
+.katex-display {
+  margin: 1.5rem 0 !important;
+  padding: 1rem !important;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* Better inline math display */
+.katex-inline {
+  padding: 0.1rem 0.2rem;
+  vertical-align: middle;
+}
+
+/* Improve matrix display */
+.katex .mord.mtable {
+  margin: 0.5rem 0;
+}
+
+.katex .arraycolsep {
+  width: 0.8em !important;
+}
+
+/* Better subscript and superscript positioning */
+.katex .vlist-t {
+  vertical-align: baseline !important;
+}
+
+.katex .msupsub {
+  vertical-align: baseline !important;
+}
+
+/* Improve fraction display */
+.katex .mfrac {
+  margin: 0.2rem 0;
+}
+
+.katex .frac-line {
+  border-bottom-width: 0.06em !important;
+  margin: 0.1em 0;
+}
+
+/* Better spacing for operators */
+.katex .mbin,
+.katex .mrel {
+  margin: 0 0.3em !important;
+}
+
+/* Improve parentheses and brackets */
+.katex .mopen,
+.katex .mclose {
+  margin: 0 0.1em !important;
+}
+
+/* Better display for large operators (sum, integral, etc) */
+.katex .mop {
+  margin: 0 0.2em !important;
+}
+
+/* Ensure proper rendering in dark backgrounds */
+.bg-indigo-600 .katex,
+.bg-indigo-50 .katex {
+  color: inherit;
+}
+
+/* Fix overflow for long equations */
+.prose .katex-display>.katex {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  display: inline-block;
+}
+
+/* Better matrix and array spacing */
+.katex .mtable .col-align-c>.vlist-t {
+  text-align: center;
+}
+
+.katex .mtable .col-align-l>.vlist-t {
+  text-align: left;
+}
+
+.katex .mtable .col-align-r>.vlist-t {
+  text-align: right;
+}
+
+/* Improve square root display */
+.katex .sqrt>.vlist-t {
+  border-top-width: 0.06em !important;
+}
+
+/* Better accent positioning */
+.katex .accent>.vlist-t>.vlist-r>.vlist {
+  height: auto !important;
+}
+
+/* Ensure formulas don't break layout in chat bubbles */
+.rounded-xl .katex-display {
+  background-color: transparent;
+  padding: 0.5rem 0;
+}
+
+/* Better visibility in white chat bubbles */
+.bg-white .katex {
+  color: #1e293b;
+}
+
+/* Better visibility in colored chat bubbles */
+.bg-indigo-600 .katex,
+.text-white .katex {
+  color: white !important;
+}
+
+.bg-indigo-600 .katex .katex-mathml {
+  color: white;
+}

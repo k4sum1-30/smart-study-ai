@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/data/mockcourse.ts","./src/service/gemini.ts","./src/services/gemini.ts"],"version":"5.7.3"}
