@@ -48,6 +48,9 @@ export default async function handler(req, res) {
             case 'explainCode':
                 return await handleExplainCode(ai, MODEL_NAME, payload, res);
 
+            case 'generatePerformanceReport':
+                return await handleGeneratePerformanceReport(ai, MODEL_NAME, payload, res);
+
             default:
                 return res.status(400).json({ error: 'Invalid action' });
         }
@@ -178,6 +181,30 @@ async function handleExplainCode(ai, model, payload, res) {
     const response = await ai.models.generateContent({
         model,
         contents: { role: 'user', parts }
+    });
+
+    return res.status(200).json({ success: true, data: response.text });
+}
+
+async function handleGeneratePerformanceReport(ai, model, payload, res) {
+    const { questions, userAnswers } = payload;
+
+    const prompt = `
+    Analyze the student's performance on this quiz:
+    
+    Questions: ${JSON.stringify(questions)}
+    User Answers: ${JSON.stringify(userAnswers)}
+    
+    Provide a detailed performance report including:
+    1. Overall Score
+    2. Strengths and Weaknesses
+    3. Specific topics to review
+    4. Recommendations for improvement
+    `;
+
+    const response = await ai.models.generateContent({
+        model,
+        contents: { role: 'user', parts: [{ text: prompt }] }
     });
 
     return res.status(200).json({ success: true, data: response.text });

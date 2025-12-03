@@ -80,6 +80,17 @@ export class ApiClient {
         return result.data;
     }
 
+    async generatePerformanceReport(questions: any[], userAnswers: any) {
+        const result = await this.request('/api/gemini', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'generatePerformanceReport',
+                payload: { questions, userAnswers }
+            }),
+        });
+        return result.data;
+    }
+
     async login(username: string, password: string) {
         const response = await fetch(`${API_BASE}/api/auth`, {
             method: 'POST',

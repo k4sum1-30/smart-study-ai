@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { StudyMode, StudySessionState, QuizQuestion, Slide } from './types';
-import { generateQuiz, chatWithAI, generatePerformanceReport, explainCode, generateCoursePPT, chatAboutSlide } from './services/gemini';
+// import { generateQuiz, chatWithAI, generatePerformanceReport, explainCode, generateCoursePPT, chatAboutSlide } from './services/gemini';
 import { COURSES, Course, Lecture } from './data/mockCourse';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -49,10 +49,9 @@ const PresentationRunner: React.FC<{ slides: Slide[]; onReset: () => void }> = (
     setChatHistory(prev => [...prev, { role: 'user', content: userMsg }]);
     setIsChatLoading(true);
 
-    const response = await chatAboutSlide(
-      slide.title,
-      slide.bulletPoints.join("\n"),
-      slide.explanation,
+    const context = `Slide Title: ${slide.title}\nContent: ${slide.bulletPoints.join("\n")}\nExplanation: ${slide.explanation}`;
+    const response = await apiClient.chat(
+      context,
       userMsg,
       chatHistory
     );
@@ -264,7 +263,7 @@ const CodeInterpreter: React.FC<{ onReset: () => void }> = ({ onReset }) => {
   const handleExplain = async () => {
     if (!code.trim() && !uploadedImage) return;
     setIsLoading(true);
-    const result = await explainCode(code, uploadedImage || undefined);
+    const result = await apiClient.explainCode(code, uploadedImage || undefined);
     setExplanation(result);
     setIsLoading(false);
   };
@@ -413,7 +412,7 @@ const QuizRunner: React.FC<{ questions: QuizQuestion[]; onReset: () => void }> =
     if (isFinished && !report && !isReportLoading) {
       const fetchReport = async () => {
         setIsReportLoading(true);
-        const rep = await generatePerformanceReport(questions, userAnswers);
+        const rep = await apiClient.generatePerformanceReport(questions, userAnswers);
         setReport(rep);
         setIsReportLoading(false);
       };
@@ -446,7 +445,11 @@ const QuizRunner: React.FC<{ questions: QuizQuestion[]; onReset: () => void }> =
     setChatHistory(prev => [...prev, { role: 'user', content: userMsg }]);
     setIsChatLoading(true);
 
-    const response = await chatWithAI(currentQ.question, currentQ.explanation, userMsg, chatHistory);
+    const response = await apiClient.chat(
+      `Question: ${currentQ.question}\nExplanation: ${currentQ.explanation}`,
+      userMsg,
+      chatHistory
+    );
 
     setChatHistory(prev => [...prev, { role: 'model', content: response }]);
     setIsChatLoading(false);
@@ -895,7 +898,7 @@ const CourseView: React.FC<{ course: Course; onBack: () => void }> = ({ course, 
         }
       }
 
-      const quizData = await generateQuiz(type, "", studyFiles, course.title);
+      const quizData = await apiClient.generateQuiz(type, "", studyFiles, course.title);
 
       // Generate diagrams for Robotics OPEN questions
       if (course.title.toLowerCase().includes('robotics')) {
@@ -967,7 +970,7 @@ const CourseView: React.FC<{ course: Course; onBack: () => void }> = ({ course, 
       }
 
       // Pass the selected mode (REVIEW, PREVIEW, or QUIZ) to the generator
-      const quizData = await generateQuiz(mode, lecture.content, studyFiles, course.title);
+      const quizData = await apiClient.generateQuiz(mode, lecture.content, studyFiles, course.title);
 
       setSessionState(prev => ({
         ...prev,
@@ -997,7 +1000,7 @@ const CourseView: React.FC<{ course: Course; onBack: () => void }> = ({ course, 
     try {
       // Filter lectures based on range
       const targetLectures = course.lectures.filter(l => l.number >= startLecture && l.number <= endLecture);
-      const slides = await generateCoursePPT(targetLectures);
+      const slides = await apiClient.generatePPT(targetLectures);
       setSessionState(prev => ({
         ...prev,
         isLoading: false,
@@ -1241,8 +1244,49 @@ const CourseView: React.FC<{ course: Course; onBack: () => void }> = ({ course, 
   );
 };
 
+import { Login } from './components/Login';
+import { apiClient } from './services/apiClient';
+
+// ... (keep existing imports)
+
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check authentication on load
+  React.useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        setIsAuthenticated(true);
+      }
+      setIsLoading(false);
+    };
+    checkAuth();
+  }, []);
+
+  const handleLogin = (token: string) => {
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    apiClient.logout();
+    setIsAuthenticated(false);
+    setCurrentCourse(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
 
   if (currentCourse) {
     return <CourseView course={currentCourse} onBack={() => setCurrentCourse(null)} />;
@@ -1260,7 +1304,15 @@ export default function App() {
               </div>
               <span className="font-bold text-xl text-slate-900">SmartStudy<span className="text-indigo-600">AI</span></span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs">JD</div>
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs">JD</div>
+              <button
+                onClick={handleLogout}
+                className="text-sm text-slate-500 hover:text-red-600 font-medium"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </nav>
