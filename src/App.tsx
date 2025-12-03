@@ -1266,7 +1266,7 @@ export default function App() {
     checkAuth();
   }, []);
 
-  const handleLogin = (token: string) => {
+  const handleLogin = () => {
     setIsAuthenticated(true);
   };
 
